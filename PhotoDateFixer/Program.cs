@@ -57,15 +57,18 @@ var imageStats = imageFiles.AsParallel()
         var dateCreated = TruncateMillis(File.GetCreationTime(f));
         var dateModified = TruncateMillis(File.GetLastWriteTime(f));
 
+        var namePrefix = dateTaken.HasValue ? dateTaken!.Value.ToString("yyyyMMddHHmmss") + "_" : string.Empty;
         return new
         {
             File = f,
             DateTaken = dateTaken,
+            NamePrefix = namePrefix,
             ExifDate = exifDate,
             ExifDateDigitized = exifDateDigitized,
             DateCreated = dateCreated,
             DateModified = dateModified,
             NeedsUpdate = new[] { dateTaken, exifDate ?? dateTaken, exifDateDigitized, dateCreated, dateModified }.Distinct().Count() > 1
+                || !Path.GetFileName(f).StartsWith(namePrefix)
         };
     })
     .ToArray();
@@ -122,9 +125,12 @@ if (toFix.Any())
             }
             File.SetCreationTime(i.File, i.DateTaken!.Value);
             File.SetLastWriteTime(i.File, i.DateTaken!.Value);
+            if (!Path.GetFileName(i.File).StartsWith(i.NamePrefix))
+            {
+                File.Move(i.File, Path.Combine(Path.GetDirectoryName(i.File), i.NamePrefix + Path.GetFileName(i.File)));
+            }
         });
         AnsiConsole.WriteLine("Dates updated!");
-        
     }
 }
 else
