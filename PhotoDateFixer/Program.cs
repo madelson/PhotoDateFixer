@@ -20,7 +20,7 @@ while (true)
     var parent = Path.GetDirectoryName(directory);
     if (parent != null)
     {
-        options.Add((parent, "[grey].. (up on level)[/]"));
+        options.Add((parent, "[grey].. (up one level)[/]"));
     }
     options.AddRange(Directory.GetDirectories(directory).Select(d => (d, Path.GetFileName(d))));
 
